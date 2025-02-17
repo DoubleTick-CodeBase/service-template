@@ -1,6 +1,5 @@
 import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { swaggerUI } from "@hono/swagger-ui";
 
 import { jwt } from "hono/jwt";
 import { cors } from "hono/cors";
@@ -33,8 +32,6 @@ app.doc("/openapi", {
     title: "Template hono api",
   },
 });
-
-app.get("/docs", swaggerUI({ url: "/openapi" }));
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
