@@ -8,7 +8,8 @@ services:
     ports:
       - "${PORT:-3000}:3000"
     environment:
-      DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?schema=public"
+      DATABASE_URL: "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@database:${DATABASE_PORT:-5432}/${DATABASE_NAME}?schema=public"
+      CACHE_URL: "redis://${CACHE_USERNAME}:${CACHE_PASSWORD}@cache:${CACHE_PORT:-6379}"
     depends_on:
       cache:
         condition: service_started
@@ -20,13 +21,19 @@ services:
     image: redis:6.2-alpine
     restart: always
     ports:
-      - "6379:6379"
+      - "${CACHE_PORT:-6379}:6379"
+    environment:
+      REDIS_PASSWORD: ${CACHE_PASSWORD}
+      REDIS_USERNAME: ${CACHE_USERNAME}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 1s
       timeout: 3s
       retries: 5
-    command: ["redis-server"]
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$${CACHE_PASSWORD:?REDIS_PASSWORD variable is not set}"
     volumes: 
       - ${CACHE_VOLUME:-cache_data}:/data
 
